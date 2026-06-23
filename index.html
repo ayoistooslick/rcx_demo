@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Receiptor-X</title>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #080808;
+      --glass: rgba(255,255,255,0.04);
+      --glass-hover: rgba(255,255,255,0.07);
+      --border: rgba(255,255,255,0.10);
+      --border-bright: rgba(255,255,255,0.22);
+      --text: #f2f2f2;
+      --muted: rgba(255,255,255,0.42);
+      --accent: #ffffff;
+      --success: rgba(120,255,160,0.85);
+      --fail: rgba(255,90,90,0.85);
+    }
+
+    body {
+      font-family: 'Google Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2.5rem 1rem 4rem;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Ambient background glow */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -30vh;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80vw;
+      height: 60vh;
+      background: radial-gradient(ellipse at center, rgba(255,255,255,0.045) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    body::after {
+      content: '';
+      position: fixed;
+      bottom: -20vh;
+      right: -10vw;
+      width: 50vw;
+      height: 50vh;
+      background: radial-gradient(ellipse at center, rgba(255,255,255,0.025) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page-wrap {
+      width: 100%;
+      max-width: 520px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── Header ── */
+    .header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+    .logo-mark {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 64px;
+      height: 64px;
+      border-radius: 18px;
+      background: var(--glass);
+      border: 1px solid var(--border-bright);
+      backdrop-filter: blur(16px);
+      margin-bottom: 1.25rem;
+      font-size: 1.75rem;
+      color: var(--text);
+      position: relative;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.04) inset,
+                  0 8px 32px rgba(0,0,0,0.6);
+    }
+    .logo-mark i { filter: drop-shadow(0 0 8px rgba(255,255,255,0.3)); }
+
+    .wordmark {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--text);
+    }
+    .wordmark span {
+      color: var(--muted);
+      font-weight: 400;
+    }
+    .tagline {
+      margin-top: 0.5rem;
+      font-size: 0.875rem;
+      color: var(--muted);
+      letter-spacing: 0.02em;
+    }
+
+    /* ── Glass Card ── */
+    .glass-card {
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      padding: 2rem;
+      margin-bottom: 1.25rem;
+      box-shadow: 0 2px 40px rgba(0,0,0,0.5),
+                  0 1px 0 rgba(255,255,255,0.06) inset;
+      transition: border-color 0.3s;
+    }
+    .glass-card:hover {
+      border-color: var(--border-bright);
+    }
+
+    /* ── Section label ── */
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1.5rem;
+    }
+    .section-label i { font-size: 0.75rem; }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── Drop Zone ── */
+    .drop-zone {
+      border: 1.5px dashed var(--border-bright);
+      border-radius: 14px;
+      padding: 2.25rem 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: background 0.25s, border-color 0.25s;
+      position: relative;
+      background: rgba(255,255,255,0.02);
+    }
+    .drop-zone:hover, .drop-zone.drag-over {
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(255,255,255,0.4);
+    }
+    .drop-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+    .drop-icon {
+      font-size: 2rem;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+      display: block;
+    }
+    .drop-zone h3 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.3rem;
+    }
+    .drop-zone p {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+    .file-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      justify-content: center;
+      margin-top: 0.75rem;
+    }
+    .file-chip {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.2rem 0.55rem;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+    }
+
+    /* ── Divider ── */
+    .or-divider {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin: 1.5rem 0;
+      color: var(--muted);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .or-divider::before, .or-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── URL Input ── */
+    .input-wrap {
+      position: relative;
+    }
+    .input-wrap i {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      font-size: 0.85rem;
+      pointer-events: none;
+    }
+    .url-input {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.8rem 1rem 0.8rem 2.75rem;
+      font-family: 'Google Sans', sans-serif;
+      font-size: 0.875rem;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .url-input::placeholder { color: var(--muted); }
+    .url-input:focus {
+      border-color: var(--border-bright);
+      background: rgba(255,255,255,0.07);
+    }
+    .url-input:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    /* ── Submit Button ── */
+    .submit-btn {
+      width: 100%;
+      margin-top: 1.75rem;
+      padding: 1rem;
+      font-family: 'Google Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      color: var(--bg);
+      background: var(--text);
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 4px 24px rgba(255,255,255,0.12);
+    }
+    .submit-btn:hover:not(:disabled) {
+      opacity: 0.92;
+      transform: translateY(-1px);
+      box-shadow: 0 8px 32px rgba(255,255,255,0.18);
+    }
+    .submit-btn:active:not(:disabled) { transform: translateY(0); }
+    .submit-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* ── Scanning animation ── */
+    @keyframes scan-line {
+      0%   { top: 0%; opacity: 1; }
+      90%  { opacity: 1; }
+      100% { top: 100%; opacity: 0; }
+    }
+    @keyframes spin-slow {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+    .scanning-icon {
+      display: inline-block;
+      animation: spin-slow 1s linear infinite;
+    }
+
+    /* ── Result Card ── */
+    .result-card {
+      display: none;
+      position: relative;
+      overflow: hidden;
+    }
+    .result-card.visible { display: block; }
+
+    .result-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+    .result-badge {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .badge-success {
+      background: rgba(120,255,160,0.12);
+      color: var(--success);
+      border: 1px solid rgba(120,255,160,0.25);
+    }
+    .badge-fail {
+      background: rgba(255,90,90,0.12);
+      color: var(--fail);
+      border: 1px solid rgba(255,90,90,0.25);
+    }
+    .result-title {
+      font-size: 1rem;
+      font-weight: 700;
+    }
+    .result-subtitle {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 0.1rem;
+    }
+
+    .result-json {
+      background: rgba(0,0,0,0.35);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.1rem;
+      font-family: 'Google Sans Mono', 'Courier New', monospace;
+      font-size: 0.78rem;
+      line-height: 1.7;
+      color: rgba(255,255,255,0.72);
+      white-space: pre-wrap;
+      word-break: break-all;
+      overflow-x: auto;
+    }
+
+    /* Success/fail tint on result card */
+    .result-card.state-success { border-color: rgba(120,255,160,0.22); }
+    .result-card.state-fail    { border-color: rgba(255,90,90,0.22); }
+
+    /* Scan-line shimmer inside result */
+    .result-card.state-success::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--success), transparent);
+      animation: none;
+    }
+
+    /* ── Meta footer ── */
+    .meta-footer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+      margin-top: 2.5rem;
+    }
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.72rem;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+    .meta-item i { font-size: 0.7rem; }
+
+    /* ── File selected state ── */
+    .drop-zone.has-file {
+      border-style: solid;
+      border-color: rgba(255,255,255,0.3);
+      background: rgba(255,255,255,0.05);
+    }
+    .drop-zone.has-file .drop-icon { color: var(--text); }
+
+    /* ── Responsive ── */
+    @media (max-width: 480px) {
+      .glass-card { padding: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrap">
+
+    <!-- Header -->
+    <div class="header">
+      <div class="logo-mark">
+        <i class="fa-solid fa-receipt"></i>
+      </div>
+      <div class="wordmark">Receiptor<span>-X</span></div>
+      <div class="tagline">
+        <i class="fa-solid fa-shield-halved" style="margin-right:0.35rem; opacity:0.6;"></i>
+        Instant receipt verification
+      </div>
+    </div>
+
+    <!-- Upload card -->
+    <div class="glass-card">
+      <div class="section-label">
+        <i class="fa-solid fa-arrow-up-from-bracket"></i>
+        Upload receipt
+      </div>
+
+      <div class="drop-zone" id="dropZone">
+        <input type="file" id="imageFile" accept="image/*">
+        <i class="fa-regular fa-image drop-icon" id="dropIcon"></i>
+        <h3 id="dropTitle">Drop image here</h3>
+        <p id="dropSub">or click to browse your device</p>
+        <div class="file-chips">
+          <span class="file-chip"><i class="fa-brands fa-instagram" style="margin-right:3px;"></i> PNG</span>
+          <span class="file-chip">JPG</span>
+          <span class="file-chip">JPEG</span>
+          <span class="file-chip">WEBP</span>
+        </div>
+      </div>
+
+      <div class="or-divider">
+        <i class="fa-solid fa-code-branch" style="opacity:0.4;"></i>
+        or paste a URL
+      </div>
+
+      <div class="input-wrap">
+        <i class="fa-solid fa-link"></i>
+        <input
+          type="text"
+          id="imageUrl"
+          class="url-input"
+          placeholder="https://example.com/receipt.jpg"
+        >
+      </div>
+
+      <button class="submit-btn" id="submitBtn" onclick="handleVerify()">
+        <i class="fa-solid fa-magnifying-glass" id="btnIcon"></i>
+        <span id="btnLabel">Verify Receipt</span>
+      </button>
+    </div>
+
+    <!-- Result card -->
+    <div class="glass-card result-card" id="resultCard">
+      <div class="result-header">
+        <div class="result-badge" id="resultBadge">
+          <i class="fa-solid fa-circle-check" id="resultIcon"></i>
+        </div>
+        <div>
+          <div class="result-title" id="resultTitle">Verification complete</div>
+          <div class="result-subtitle" id="resultSubtitle">API response below</div>
+        </div>
+      </div>
+      <pre class="result-json" id="resultJson"></pre>
+    </div>
+
+    <!-- Footer meta -->
+    <div class="meta-footer">
+      <div class="meta-item">
+        <i class="fa-solid fa-lock"></i>
+        Encrypted
+      </div>
+      <div class="meta-item">
+        <i class="fa-solid fa-bolt"></i>
+        Instant
+      </div>
+      <div class="meta-item">
+        <i class="fa-solid fa-server"></i>
+        /api/verify
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const fileInput  = document.getElementById('imageFile');
+    const urlInput   = document.getElementById('imageUrl');
+    const submitBtn  = document.getElementById('submitBtn');
+    const btnIcon    = document.getElementById('btnIcon');
+    const btnLabel   = document.getElementById('btnLabel');
+    const dropZone   = document.getElementById('dropZone');
+    const dropIcon   = document.getElementById('dropIcon');
+    const dropTitle  = document.getElementById('dropTitle');
+    const dropSub    = document.getElementById('dropSub');
+    const resultCard = document.getElementById('resultCard');
+    const resultBadge   = document.getElementById('resultBadge');
+    const resultIcon    = document.getElementById('resultIcon');
+    const resultTitle   = document.getElementById('resultTitle');
+    const resultSubtitle = document.getElementById('resultSubtitle');
+    const resultJson    = document.getElementById('resultJson');
+
+    // File selection feedback
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length > 0) {
+        const name = fileInput.files[0].name;
+        dropIcon.className = 'fa-solid fa-file-image drop-icon';
+        dropTitle.textContent = name.length > 32 ? name.slice(0,30) + '…' : name;
+        dropSub.textContent = (fileInput.files[0].size / 1024).toFixed(1) + ' KB · ready to verify';
+        dropZone.classList.add('has-file');
+        urlInput.disabled = true;
+      } else {
+        resetDrop();
+      }
+    });
+
+    urlInput.addEventListener('input', () => {
+      fileInput.disabled = urlInput.value.trim() !== '';
+      if (urlInput.value.trim() === '') fileInput.disabled = false;
+    });
+
+    // Drag & drop
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('drag-over');
+      if (e.dataTransfer.files.length) {
+        fileInput.files = e.dataTransfer.files;
+        fileInput.dispatchEvent(new Event('change'));
+      }
+    });
+
+    function resetDrop() {
+      dropIcon.className = 'fa-regular fa-image drop-icon';
+      dropTitle.textContent = 'Drop image here';
+      dropSub.textContent = 'or click to browse your device';
+      dropZone.classList.remove('has-file');
+      urlInput.disabled = false;
+    }
+
+    async function handleVerify() {
+      const hasFile = fileInput.files && fileInput.files.length > 0;
+      const hasUrl  = urlInput.value.trim() !== '';
+
+      if (!hasFile && !hasUrl) {
+        urlInput.focus();
+        urlInput.style.borderColor = 'rgba(255,90,90,0.6)';
+        setTimeout(() => urlInput.style.borderColor = '', 800);
+        return;
+      }
+
+      // Set loading state
+      submitBtn.disabled = true;
+      btnIcon.className = 'fa-solid fa-circle-notch scanning-icon';
+      btnLabel.textContent = 'Scanning…';
+      resultCard.classList.remove('visible', 'state-success', 'state-fail');
+
+      const formData = new FormData();
+      if (hasFile) formData.append('receiptImage', fileInput.files[0]);
+      else formData.append('imageUrl', urlInput.value.trim());
+
+      try {
+        const response = await fetch('/api/verify', { method: 'POST', body: formData });
+        const data = await response.json();
+
+        const ok = !!data.valid;
+        resultCard.className = `glass-card result-card visible ${ok ? 'state-success' : 'state-fail'}`;
+        resultBadge.className = `result-badge ${ok ? 'badge-success' : 'badge-fail'}`;
+        resultIcon.className  = ok
+          ? 'fa-solid fa-circle-check'
+          : 'fa-solid fa-circle-xmark';
+        resultTitle.textContent   = ok ? 'Receipt verified' : 'Verification failed';
+        resultSubtitle.textContent = ok
+          ? 'Document looks authentic'
+          : 'Could not authenticate document';
+        resultJson.textContent = JSON.stringify(data, null, 2);
+
+      } catch (err) {
+        resultCard.className = 'glass-card result-card visible state-fail';
+        resultBadge.className = 'result-badge badge-fail';
+        resultIcon.className  = 'fa-solid fa-triangle-exclamation';
+        resultTitle.textContent    = 'Request failed';
+        resultSubtitle.textContent = 'Check your connection and try again';
+        resultJson.textContent = `Error: ${err.message}`;
+      } finally {
+        submitBtn.disabled = false;
+        btnIcon.className = 'fa-solid fa-magnifying-glass';
+        btnLabel.textContent = 'Verify Receipt';
+      }
+    }
+  </script>
+</body>
+</html>

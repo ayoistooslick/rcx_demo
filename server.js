@@ -18,6 +18,10 @@ app.get('/', (req, res) => {
   res.sendFile(join(__dirname, 'index.html'));
 });
 
+app.use((req, res) => {
+  res.sendFile(join(__dirname, 'index.html'));
+});
+
 const upload = multer({ storage: multer.memoryStorage() });
 
 const EXPECTED_RECIPIENT = 'Ayodele Ganiyu';
