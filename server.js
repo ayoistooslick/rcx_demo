@@ -14,24 +14,23 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-
 app.get('/', (req, res) => {
   res.sendFile(join(__dirname, 'index.html'));
 });
 
 const upload = multer({ storage: multer.memoryStorage() });
 
-
 const EXPECTED_RECIPIENT = 'Ayodele Ganiyu';
 const EXPECTED_BANK = 'SmartCash';
 const EXPECTED_AMOUNT = 1000;
 
-const RCX_API_KEY = process.env.RCX_API_KEY || 'rcx_live_tdqc9aq0ot45zgalmnpoenkrapd91xf9';
+// --- HARDCODED API KEY (No fallback logic) ---
+const RCX_API_KEY = 'rcx_live_tdqc9aq0ot45zgalmnpoenkrapd91xf9';
 
 let client;
 try {
-  if (!RCX_API_KEY || RCX_API_KEY === 'rcx_live_tdqc9aq0ot45zgalmnpoenkrapd91xf9') {
-    throw new Error('RCX_API_KEY is missing or is still a placeholder.');
+  if (!RCX_API_KEY) {
+    throw new Error('RCX_API_KEY is empty.');
   }
 
   client = new ReceiptorX({
@@ -59,6 +58,7 @@ app.post('/api/verify', upload.single('receiptImage'), async (req, res) => {
     let result;
     const { imageUrl } = req.body;
     const file = req.file;
+
     if (file) {
       console.log('Verifying uploaded file...');
       result = await client.verify(file.buffer);
@@ -92,5 +92,5 @@ app.use((req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Test site running at http://localhost:${PORT}`);
+  console.log(`🚀 Test site running at http://localhost:${PORT}`);
 });
